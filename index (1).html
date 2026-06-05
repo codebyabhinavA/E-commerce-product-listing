@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopNow - Product Listing</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f5f0; --surface: #ffffff; --text-primary: #1a1a1a;
+    --text-secondary: #666; --text-muted: #999; --accent: #c8502a;
+    --accent-light: #fdf0eb; --border: #e8e4dc; --tag-bg: #f0ede6;
+    --radius: 12px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    height: 64px; display: flex; align-items: center; padding: 0 2rem; gap: 1.5rem;
+  }
+  .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--accent); margin-right: auto; }
+  .nav-cart {
+    background: var(--accent); color: #fff; border: none; cursor: pointer;
+    padding: 8px 18px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px;
+  }
+  .nav-cart:hover { background: #a8391a; }
+  .cart-count {
+    background: #fff; color: var(--accent); border-radius: 50%;
+    width: 20px; height: 20px; font-size: 0.75rem; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1a1a 60%, #2d1810);
+    color: #fff; padding: 4rem 2rem 3rem; text-align: center;
+  }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; margin-bottom: 0.5rem; }
+  .hero p { color: #aaa; font-size: 1rem; }
+  .categories-section { padding: 2.5rem 2rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+  .section-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; }
+  .categories-grid { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .cat-btn {
+    padding: 10px 20px; border-radius: 100px; border: 1.5px solid var(--border);
+    background: var(--surface); font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+  }
+  .cat-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .cat-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filters-bar {
+    max-width: 1200px; margin: 0 auto; padding: 0.75rem 2rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  }
+  .filter-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
+  .filter-select, .search-input {
+    padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; color: var(--text-primary); outline: none;
+  }
+  .search-input { width: 200px; }
+  .results-count { margin-left: auto; font-size: 0.85rem; color: var(--text-muted); }
+  .products-section { max-width: 1200px; margin: 0 auto; padding: 0 2rem 4rem; }
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+  .product-card {
+    background: var(--surface); border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--border); transition: transform 0.25s, box-shadow 0.25s; cursor: pointer; position: relative;
+  }
+  .product-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,0.14); }
+  .product-badge {
+    position: absolute; top: 12px; left: 12px; background: var(--accent); color: #fff;
+    font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;
+  }
+  .wishlist-btn {
+    position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9);
+    border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%;
+    font-size: 1rem; display: flex; align-items: center; justify-content: center;
+  }
+  .product-img-placeholder {
+    width: 100%; aspect-ratio: 1; background: var(--tag-bg);
+    display: flex; align-items: center; justify-content: center; font-size: 3.5rem;
+  }
+  .product-info { padding: 1rem; }
+  .product-category { font-size: 0.7rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .product-name { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); margin-bottom: 6px; line-height: 1.35; }
+  .product-rating { font-size: 0.8rem; color: #e6a817; margin-bottom: 10px; }
+  .product-rating span { color: var(--text-muted); margin-left: 2px; }
+  .product-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+  .product-price { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+  .product-price .old-price { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); text-decoration: line-through; margin-right: 4px; }
+  .add-btn {
+    background: var(--accent); color: #fff; border: none; cursor: pointer;
+    padding: 7px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 500; transition: background 0.2s;
+  }
+  .add-btn:hover { background: #a8391a; }
+  .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.55); align-items: center; justify-content: center; padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 16px; max-width: 560px; width: 100%; overflow: hidden; }
+  .modal-img { width: 100%; aspect-ratio: 16/9; background: var(--tag-bg); display: flex; align-items: center; justify-content: center; font-size: 5rem; }
+  .modal-body { padding: 1.5rem; }
+  .modal-cat { font-size: 0.72rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .modal-name { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+  .modal-rating { font-size: 0.85rem; color: #e6a817; margin-bottom: 12px; }
+  .modal-desc { font-size: 0.9rem; line-height: 1.65; color: var(--text-secondary); margin-bottom: 16px; }
+  .modal-price { font-size: 1.5rem; font-weight: 600; }
+  .modal-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+  .btn-primary { flex: 1; padding: 11px; background: var(--accent); color: #fff; border: none; cursor: pointer; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; }
+  .btn-primary:hover { background: #a8391a; }
+  .btn-secondary { padding: 11px 18px; background: transparent; color: var(--text-primary); border: 1.5px solid var(--border); cursor: pointer; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; }
+  .close-modal { float: right; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); }
+  .cart-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.4); }
+  .cart-overlay.open { display: block; }
+  .cart-panel {
+    position: fixed; top: 0; right: -420px; z-index: 301;
+    width: 380px; max-width: 90vw; height: 100%;
+    background: var(--surface); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; transition: right 0.3s ease; padding: 1.5rem;
+  }
+  .cart-panel.open { right: 0; }
+  .cart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .cart-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; }
+  .close-cart { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); }
+  .cart-items { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+  .cart-item { display: flex; gap: 0.75rem; align-items: center; }
+  .cart-item-icon { font-size: 2rem; background: var(--tag-bg); padding: 8px; border-radius: 8px; }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-size: 0.9rem; font-weight: 500; }
+  .cart-item-price { font-size: 0.85rem; color: var(--text-muted); }
+  .cart-item-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
+  .cart-footer { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem; }
+  .cart-total { display: flex; justify-content: space-between; font-weight: 600; font-size: 1rem; margin-bottom: 1rem; }
+  .checkout-btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; cursor: pointer; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; }
+  .empty-cart { text-align: center; padding: 3rem 0; color: var(--text-muted); }
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #1a1a1a; color: #fff; padding: 10px 22px; border-radius: 100px;
+    font-size: 0.88rem; font-weight: 500; z-index: 500; transition: transform 0.3s; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  footer { background: #1a1a1a; color: #888; text-align: center; padding: 1.5rem; font-size: 0.82rem; }
+  footer span { color: var(--accent); }
+  @media (max-width: 600px) {
+    .hero { padding: 2.5rem 1rem 2rem; }
+    .categories-section, .filters-bar, .products-section { padding-left: 1rem; padding-right: 1rem; }
+    .products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+    .search-input { width: 100%; }
+    .cart-panel { width: 100%; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">ShopNow</div>
+  <button class="nav-cart" onclick="toggleCart()">
+    🛒 Cart <span class="cart-count" id="cartCount">0</span>
+  </button>
+</nav>
+
+<div class="hero">
+  <h1>Discover Amazing Products</h1>
+  <p>Electronics · Clothing · Accessories — all in one place</p>
+</div>
+
+<section class="categories-section">
+  <div class="section-label">Browse by Category</div>
+  <div class="categories-grid" id="categoryBtns"></div>
+</section>
+
+<div class="filters-bar">
+  <span class="filter-label">Filter:</span>
+  <select class="filter-select" id="priceFilter" onchange="applyFilters()">
+    <option value="all">All Prices</option>
+    <option value="0-50">Under $50</option>
+    <option value="50-100">$50 – $100</option>
+    <option value="100-300">$100 – $300</option>
+    <option value="300-99999">Above $300</option>
+  </select>
+  <select class="filter-select" id="sortFilter" onchange="applyFilters()">
+    <option value="default">Sort: Default</option>
+    <option value="price-asc">Price: Low to High</option>
+    <option value="price-desc">Price: High to Low</option>
+    <option value="rating">Top Rated</option>
+  </select>
+  <input class="search-input" type="text" id="searchInput" placeholder="Search products..." oninput="applyFilters()">
+  <span class="results-count" id="resultsCount"></span>
+</div>
+
+<section class="products-section">
+  <div class="products-grid" id="productsGrid"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <div class="icon">🔍</div>
+    <p>No products found. Try adjusting your filters.</p>
+  </div>
+</section>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-img" id="modalImg"></div>
+    <div class="modal-body">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div class="modal-cat" id="modalCat"></div>
+        <button class="close-modal" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-name" id="modalName"></div>
+      <div class="modal-rating" id="modalRating"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div class="modal-price" id="modalPrice"></div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="modalAddBtn">Add to Cart</button>
+        <button class="btn-secondary" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <div class="cart-title">Your Cart</div>
+    <button class="close-cart" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="empty-cart"><p>Your cart is empty</p></div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
+    <button class="checkout-btn" onclick="checkout()">Checkout →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>© 2024 <span>ShopNow</span> · Built with HTML, CSS & JavaScript</footer>
+
+<script>
+var PRODUCTS = [
+  {id:1,name:"Wireless Noise-Cancelling Headphones",category:"Electronics",price:149.99,oldPrice:199.99,rating:4.8,reviews:342,emoji:"🎧",badge:"Sale",desc:"Premium over-ear headphones with 30hr battery, active noise cancellation, and hi-fi audio."},
+  {id:2,name:"Mechanical Gaming Keyboard",category:"Electronics",price:89.99,oldPrice:null,rating:4.6,reviews:215,emoji:"⌨️",badge:null,desc:"Tactile mechanical switches, RGB backlight, anti-ghosting keys for performance gaming."},
+  {id:3,name:"Smartwatch Pro Series 5",category:"Electronics",price:249.99,oldPrice:299.99,rating:4.7,reviews:578,emoji:"⌚",badge:"Hot",desc:"Heart rate monitor, GPS, sleep tracking, 7-day battery. Compatible with iOS and Android."},
+  {id:4,name:"Bluetooth Portable Speaker",category:"Electronics",price:59.99,oldPrice:null,rating:4.5,reviews:189,emoji:"🔊",badge:null,desc:"360 degree surround sound, waterproof IPX7, 20hr playtime for outdoor adventures."},
+  {id:5,name:"4K Webcam HD",category:"Electronics",price:79.99,oldPrice:99.99,rating:4.4,reviews:134,emoji:"📷",badge:"Sale",desc:"Ultra-clear 4K video, autofocus, built-in noise-cancelling mic for video calls."},
+  {id:6,name:"Slim Laptop Stand",category:"Electronics",price:34.99,oldPrice:null,rating:4.3,reviews:90,emoji:"💻",badge:null,desc:"Aluminium foldable stand with adjustable height. Compatible with all laptops."},
+  {id:7,name:"Classic Oxford Shirt",category:"Clothing",price:44.99,oldPrice:null,rating:4.6,reviews:203,emoji:"👔",badge:null,desc:"100% premium cotton, wrinkle-resistant, available in 8 colours for office and casual wear."},
+  {id:8,name:"Slim Fit Chinos",category:"Clothing",price:54.99,oldPrice:69.99,rating:4.5,reviews:310,emoji:"👖",badge:"Sale",desc:"Stretch twill fabric, tapered fit, 5-pocket design from boardroom to weekend."},
+  {id:9,name:"Oversized Cozy Hoodie",category:"Clothing",price:39.99,oldPrice:null,rating:4.8,reviews:512,emoji:"🧥",badge:"Hot",desc:"Ultra-soft fleece interior, kangaroo pocket, relaxed oversized fit. Your everyday staple."},
+  {id:10,name:"Classic White Sneakers",category:"Clothing",price:64.99,oldPrice:79.99,rating:4.7,reviews:445,emoji:"👟",badge:"Sale",desc:"Minimalist leather upper, cushioned insole, rubber outsole. Goes with everything."},
+  {id:11,name:"Merino Wool Sweater",category:"Clothing",price:89.99,oldPrice:null,rating:4.6,reviews:178,emoji:"🧶",badge:null,desc:"Fine merino wool blend, ribbed cuffs, crew neck. Lightweight warmth for any season."},
+  {id:12,name:"Floral Summer Dress",category:"Clothing",price:49.99,oldPrice:64.99,rating:4.5,reviews:267,emoji:"👗",badge:"Sale",desc:"Breathable cotton-linen blend, midi length, adjustable straps. Light and breezy all day."},
+  {id:13,name:"Leather Bifold Wallet",category:"Accessories",price:29.99,oldPrice:null,rating:4.7,reviews:398,emoji:"👛",badge:null,desc:"Full-grain leather, RFID blocking, slim profile. Holds up to 8 cards and cash."},
+  {id:14,name:"Polarised Aviator Sunglasses",category:"Accessories",price:44.99,oldPrice:59.99,rating:4.6,reviews:224,emoji:"🕶️",badge:"Sale",desc:"100% UV400 protection, polarised lenses, lightweight metal frame."},
+  {id:15,name:"Canvas Tote Bag",category:"Accessories",price:19.99,oldPrice:null,rating:4.4,reviews:156,emoji:"👜",badge:null,desc:"Heavy-duty canvas, internal zipper pocket, 20L capacity. Eco-friendly everyday carry."},
+  {id:16,name:"Stainless Steel Water Bottle",category:"Accessories",price:24.99,oldPrice:34.99,rating:4.8,reviews:631,emoji:"🍶",badge:"Hot",desc:"Double-wall insulated, keeps drinks cold 24hr and hot 12hr. BPA-free, leak-proof lid."},
+  {id:17,name:"Minimalist Leather Belt",category:"Accessories",price:32.99,oldPrice:null,rating:4.5,reviews:145,emoji:"🎽",badge:null,desc:"Full-grain leather, brushed silver buckle, 1.25 inch width. Slim and versatile."},
+  {id:18,name:"Scented Soy Candle Set",category:"Accessories",price:27.99,oldPrice:null,rating:4.7,reviews:289,emoji:"🕯️",badge:null,desc:"Set of 3 hand-poured soy candles — Vanilla, Sandalwood, Citrus. 40hr burn time each."}
+];
+
+var CATEGORIES = [
+  {name:"All", emoji:"🏪"},
+  {name:"Electronics", emoji:"⚡"},
+  {name:"Clothing", emoji:"👕"},
+  {name:"Accessories", emoji:"💍"}
+];
+
+var cart = [];
+var activeCategory = "All";
+
+function init() {
+  renderCategories();
+  applyFilters();
+}
+
+function renderCategories() {
+  var container = document.getElementById('categoryBtns');
+  var html = '';
+  for (var i = 0; i < CATEGORIES.length; i++) {
+    var c = CATEGORIES[i];
+    var activeClass = activeCategory === c.name ? 'active' : '';
+    html += '<button class="cat-btn ' + activeClass + '" onclick="setCategory(\'' + c.name + '\')">' + c.emoji + ' ' + c.name + '</button>';
+  }
+  container.innerHTML = html;
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  renderCategories();
+  applyFilters();
+}
+
+function applyFilters() {
+  var price = document.getElementById('priceFilter').value;
+  var sort = document.getElementById('sortFilter').value;
+  var search = document.getElementById('searchInput').value.toLowerCase();
+
+  var filtered = [];
+  for (var i = 0; i < PRODUCTS.length; i++) {
+    var p = PRODUCTS[i];
+    var catMatch = activeCategory === 'All' || p.category === activeCategory;
+    var searchMatch = p.name.toLowerCase().indexOf(search) !== -1 || p.category.toLowerCase().indexOf(search) !== -1;
+    var priceMatch = true;
+    if (price !== 'all') {
+      var parts = price.split('-');
+      var min = parseFloat(parts[0]);
+      var max = parseFloat(parts[1]);
+      priceMatch = p.price >= min && p.price <= max;
+    }
+    if (catMatch && searchMatch && priceMatch) filtered.push(p);
+  }
+
+  if (sort === 'price-asc') filtered.sort(function(a,b){ return a.price - b.price; });
+  else if (sort === 'price-desc') filtered.sort(function(a,b){ return b.price - a.price; });
+  else if (sort === 'rating') filtered.sort(function(a,b){ return b.rating - a.rating; });
+
+  renderProducts(filtered);
+  document.getElementById('resultsCount').textContent = filtered.length + ' product' + (filtered.length !== 1 ? 's' : '');
+}
+
+function renderProducts(products) {
+  var grid = document.getElementById('productsGrid');
+  var empty = document.getElementById('emptyState');
+  if (products.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  var html = '';
+  for (var i = 0; i < products.length; i++) {
+    var p = products[i];
+    var stars = '';
+    for (var s = 0; s < Math.floor(p.rating); s++) stars += '★';
+    for (var s = Math.floor(p.rating); s < 5; s++) stars += '☆';
+    var oldPriceHtml = p.oldPrice ? '<span class="old-price">$' + p.oldPrice + '</span>' : '';
+    var badgeHtml = p.badge ? '<div class="product-badge">' + p.badge + '</div>' : '';
+    html += '<div class="product-card" onclick="openModal(' + p.id + ')">' +
+      badgeHtml +
+      '<button class="wishlist-btn" onclick="event.stopPropagation();toggleWishlist(this)">🤍</button>' +
+      '<div class="product-img-placeholder">' + p.emoji + '</div>' +
+      '<div class="product-info">' +
+        '<div class="product-category">' + p.category + '</div>' +
+        '<div class="product-name">' + p.name + '</div>' +
+        '<div class="product-rating">' + stars + ' <span>(' + p.reviews + ')</span></div>' +
+        '<div class="product-footer">' +
+          '<div class="product-price">' + oldPriceHtml + '$' + p.price.toFixed(2) + '</div>' +
+          '<button class="add-btn" onclick="event.stopPropagation();addToCart(' + p.id + ')">+ Add</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function openModal(id) {
+  var p = null;
+  for (var i = 0; i < PRODUCTS.length; i++) { if (PRODUCTS[i].id === id) { p = PRODUCTS[i]; break; } }
+  var stars = '';
+  for (var s = 0; s < Math.floor(p.rating); s++) stars += '★';
+  for (var s = Math.floor(p.rating); s < 5; s++) stars += '☆';
+  document.getElementById('modalImg').textContent = p.emoji;
+  document.getElementById('modalCat').textContent = p.category;
+  document.getElementById('modalName').textContent = p.name;
+  document.getElementById('modalRating').textContent = stars + ' (' + p.reviews + ' reviews)';
+  document.getElementById('modalDesc').textContent = p.desc;
+  document.getElementById('modalPrice').textContent = '$' + p.price.toFixed(2);
+  document.getElementById('modalAddBtn').onclick = function() { addToCart(id); closeModal(); };
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target.id === 'modalOverlay') closeModal(); }
+
+function addToCart(id) {
+  var p = null;
+  for (var i = 0; i < PRODUCTS.length; i++) { if (PRODUCTS[i].id === id) { p = PRODUCTS[i]; break; } }
+  cart.push(p);
+  updateCartUI();
+  showToast(p.emoji + ' Added to cart!');
+}
+
+function removeFromCart(idx) { cart.splice(idx, 1); updateCartUI(); }
+
+function updateCartUI() {
+  document.getElementById('cartCount').textContent = cart.length;
+  var itemsEl = document.getElementById('cartItems');
+  var footerEl = document.getElementById('cartFooter');
+  if (cart.length === 0) {
+    itemsEl.innerHTML = '<div class="empty-cart"><p>Your cart is empty</p></div>';
+    footerEl.style.display = 'none';
+  } else {
+    var html = '';
+    for (var i = 0; i < cart.length; i++) {
+      var p = cart[i];
+      html += '<div class="cart-item">' +
+        '<div class="cart-item-icon">' + p.emoji + '</div>' +
+        '<div class="cart-item-info">' +
+          '<div class="cart-item-name">' + p.name.split(' ').slice(0,4).join(' ') + '</div>' +
+          '<div class="cart-item-price">$' + p.price.toFixed(2) + '</div>' +
+        '</div>' +
+        '<button class="cart-item-remove" onclick="removeFromCart(' + i + ')">✕</button>' +
+      '</div>';
+    }
+    itemsEl.innerHTML = html;
+    var total = 0;
+    for (var i = 0; i < cart.length; i++) total += cart[i].price;
+    document.getElementById('cartTotal').textContent = '$' + total.toFixed(2);
+    footerEl.style.display = 'block';
+  }
+}
+
+function toggleCart() {
+  document.getElementById('cartPanel').classList.toggle('open');
+  document.getElementById('cartOverlay').classList.toggle('open');
+}
+
+function toggleWishlist(btn) { btn.textContent = btn.textContent === '🤍' ? '❤️' : '🤍'; }
+
+function checkout() {
+  cart = [];
+  updateCartUI();
+  toggleCart();
+  showToast('✅ Order placed! Thank you.');
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+window.onload = function() { init(); };
+</script>
+</body>
+</html>
